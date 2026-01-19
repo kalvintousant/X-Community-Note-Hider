@@ -76,36 +76,6 @@ To modify or extend the extension:
 2. Edit `manifest.json` to update permissions or settings
 3. After changes, reload the extension in `chrome://extensions/`
 
-## Publishing to GitHub
-
-If you want to publish this extension to GitHub:
-
-1. **Create a new repository on GitHub**
-   - Go to [GitHub.com](https://github.com) and sign in
-   - Click the "+" icon in the top-right corner → "New repository"
-   - Name your repository (e.g., "x-community-note-hide")
-   - Choose public or private
-   - **Don't** initialize with README, .gitignore, or license (we already have these)
-   - Click "Create repository"
-
-2. **Connect your local repository to GitHub**
-   ```bash
-   cd "/Users/kalvintousant/Desktop/X Community Note Hide"
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-   git branch -M main
-   git push -u origin main
-   ```
-   
-   Replace `YOUR_USERNAME` and `YOUR_REPO_NAME` with your actual GitHub username and repository name.
-
-3. **For subsequent updates**
-   ```bash
-   git add .
-   git commit -m "Your commit message"
-   git push
-   ```
-
-**Note**: The repository is already initialized with git and has an initial commit ready.
 
 ## License
 
