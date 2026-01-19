@@ -1,0 +1,18 @@
+# Chrome Extension
+.DS_Store
+*.pem
+*.crx
+*.zip
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# OS files
+Thumbs.db

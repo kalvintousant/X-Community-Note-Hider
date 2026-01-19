@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "X Community Note Hide",
+  "version": "1.0.0",
+  "description": "Automatically hides posts that have community notes in X timeline",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
