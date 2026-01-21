@@ -76,9 +76,8 @@
       '[data-testid="communityNote"]',
       '[data-testid="community-note"]',
       '[data-testid*="communityNote" i]',
-      '[data-testid*="community-note" i]',
-      '[data-testid*="note-" i]',
-      '[data-testid*="-note" i]'
+      '[data-testid*="community-note" i]'
+      // Removed overly broad patterns that could cause false positives
     ];
 
     for (const selector of specificSelectors) {
@@ -95,11 +94,12 @@
 
     // Priority 2: Check for Community Notes badge/icon indicators
     // Look for specific structural patterns X uses for notes
+    // MUST be specific to avoid false positives from other UI elements
     const badgeSelectors = [
-      'svg[aria-label*="note" i]',
-      'svg[aria-label*="context" i]',
-      '[role="img"][aria-label*="note" i]',
-      '[role="img"][aria-label*="context" i]'
+      'svg[aria-label*="community note" i]',
+      'svg[aria-label*="readers added context" i]',
+      '[role="img"][aria-label*="community note" i]',
+      '[role="img"][aria-label*="readers added context" i]'
     ];
 
     for (const selector of badgeSelectors) {
@@ -107,8 +107,8 @@
         const element = article.querySelector(selector);
         if (element) {
           const label = element.getAttribute('aria-label') || '';
-          // Verify it's specifically about community notes/context
-          if (/community.*note|note.*community|readers.*context|added.*context/i.test(label)) {
+          // Additional verification: ensure it's specifically about community notes
+          if (/community.*note|readers.*added.*context/i.test(label)) {
             console.log('[X Community Note Hider] Detected via badge:', label);
             return true;
           }
@@ -120,17 +120,19 @@
 
     // Priority 3: Text pattern matching (works across X's UI changes)
     // These are the actual text strings X displays for community notes
+    // Only match the EXACT phrases X uses, not general usage
     const articleText = article.textContent || '';
     const notePatterns = [
-      /readers\s+added\s+context/i,           // Primary X pattern
+      /readers\s+added\s+context/i,           // Primary X pattern - must be exact
       /context\s+they\s+thought\s+people\s+might\s+want\s+to\s+know/i,
-      /community\s+note/i,
-      /community\s+notes/i,
-      /communitynotes/i,
-      /note\s+by\s+the\s+community/i,
-      /community\s+context/i,
-      /readers.*added.*context/i,              // Flexible spacing
-      /added\s+context/i                       // Shorter variant
+      /^community\s+note/i,                   // Must start with "community note"
+      /^community\s+notes/i,
+      /communitynote/i,                       // One word variant
+      /note\s+by\s+the\s+community/i
+      // Removed loose patterns that cause false positives:
+      // - /added\s+context/i (too broad - matches "I added context")
+      // - /community\s+context/i (too broad)
+      // - /readers.*added.*context/i (too flexible)
     ];
 
     for (const pattern of notePatterns) {
@@ -143,9 +145,10 @@
     // Priority 4: ARIA label matching
     const ariaSelectors = [
       '[aria-label*="community note" i]',
-      '[aria-label*="readers added context" i]',
-      '[aria-label*="added context" i]',
-      '[aria-label*="community context" i]'
+      '[aria-label*="readers added context" i]'
+      // Removed loose patterns:
+      // - '[aria-label*="added context" i]' (too broad)
+      // - '[aria-label*="community context" i]' (too broad)
     ];
 
     for (const selector of ariaSelectors) {
@@ -171,17 +174,19 @@
 
     // Priority 6: Fallback - check all elements with data-testid attributes
     // This helps catch new attributes X might add in the future
+    // MUST be very strict to avoid false positives
     const allTestIdElements = article.querySelectorAll('[data-testid]');
     for (const element of allTestIdElements) {
       const testId = element.getAttribute('data-testid') || '';
       const text = element.textContent || '';
       const ariaLabel = element.getAttribute('aria-label') || '';
       
-      // Check for note-related keywords in any of these
-      const combined = testId + ' ' + text + ' ' + ariaLabel;
-      if (/community.*note|note.*community|readers.*context|added.*context/i.test(combined)) {
-        // Additional verification: ensure it's not a false positive
-        if (testId.toLowerCase().includes('note') || text.toLowerCase().includes('context')) {
+      // Only check if testId specifically mentions community notes
+      // This prevents false positives from other "note" related features
+      if (/community.*note|communitynote/i.test(testId)) {
+        // Additional verification: check for actual community note text
+        const combined = text + ' ' + ariaLabel;
+        if (/readers\s+added\s+context|community\s+note|context\s+they\s+thought/i.test(combined)) {
           console.log('[X Community Note Hider] Detected via fallback selector:', testId);
           return true;
         }
