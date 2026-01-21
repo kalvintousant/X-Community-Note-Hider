@@ -15,7 +15,7 @@ A Chrome extension that automatically hides posts with community notes in your X
 
 1. **Download the extension**
    - Go to [Releases](../../releases) (or the latest release)
-   - Download `X-Community-Note-Hide.zip`
+   - Download `X-Community-Note-Hider-v1.0.0.zip`
 
 2. **Extract the ZIP file**
 
@@ -29,8 +29,8 @@ A Chrome extension that automatically hides posts with community notes in your X
 
 1. **Clone this repository**
    ```bash
-   git clone https://github.com/kalvintousant/X-Community-Note-Hide.git
-   cd X-Community-Note-Hide
+   git clone https://github.com/kalvintousant/X-Community-Note-Hider.git
+   cd X-Community-Note-Hider
    ```
 
 2. **Install in Chrome**
