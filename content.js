@@ -5,87 +5,125 @@
     'use strict';
 
   // Function to check if a post has a community note
+  // Uses multiple detection methods with fallbacks for robustness
   function hasCommunityNote(article) {
     if (!article) return false;
 
-    // Community notes on X are typically indicated by:
-    // 1. Elements with data-testid containing "note" or similar
-    // 2. Text content mentioning "Community Note" or variations
-    // 3. Links to community notes pages
-    // 4. Specific SVG icons or labels related to notes
-    
-    // Get all text content from the article
+    // Priority 1: Specific data-testid selectors (most reliable)
+    // X commonly uses these data-testid values for community notes
+    const specificSelectors = [
+      '[data-testid="communityNote"]',
+      '[data-testid="community-note"]',
+      '[data-testid*="communityNote" i]',
+      '[data-testid*="community-note" i]',
+      '[data-testid*="note-" i]',
+      '[data-testid*="-note" i]'
+    ];
+
+    for (const selector of specificSelectors) {
+      try {
+        const element = article.querySelector(selector);
+        if (element) {
+          console.log('[X Community Note Hider] Detected via data-testid:', selector);
+          return true;
+        }
+      } catch (e) {
+        // Invalid selector, continue to next
+      }
+    }
+
+    // Priority 2: Check for Community Notes badge/icon indicators
+    // Look for specific structural patterns X uses for notes
+    const badgeSelectors = [
+      'svg[aria-label*="note" i]',
+      'svg[aria-label*="context" i]',
+      '[role="img"][aria-label*="note" i]',
+      '[role="img"][aria-label*="context" i]'
+    ];
+
+    for (const selector of badgeSelectors) {
+      try {
+        const element = article.querySelector(selector);
+        if (element) {
+          const label = element.getAttribute('aria-label') || '';
+          // Verify it's specifically about community notes/context
+          if (/community.*note|note.*community|readers.*context|added.*context/i.test(label)) {
+            console.log('[X Community Note Hider] Detected via badge:', label);
+            return true;
+          }
+        }
+      } catch (e) {
+        // Invalid selector, continue
+      }
+    }
+
+    // Priority 3: Text pattern matching (works across X's UI changes)
+    // These are the actual text strings X displays for community notes
     const articleText = article.textContent || '';
-    
-    // Look for "Community Note" text variations (case-insensitive)
-    // Including the main phrase X uses: "Readers added context"
     const notePatterns = [
-      /readers\s+added\s+context/i,
+      /readers\s+added\s+context/i,           // Primary X pattern
       /context\s+they\s+thought\s+people\s+might\s+want\s+to\s+know/i,
-      /community\s*note/i,
+      /community\s+note/i,
+      /community\s+notes/i,
       /communitynotes/i,
-      /note\s*by\s*the\s*community/i,
-      /community\s*context/i
+      /note\s+by\s+the\s+community/i,
+      /community\s+context/i,
+      /readers.*added.*context/i,              // Flexible spacing
+      /added\s+context/i                       // Shorter variant
     ];
 
     for (const pattern of notePatterns) {
       if (pattern.test(articleText)) {
+        console.log('[X Community Note Hider] Detected via text pattern:', pattern.source);
         return true;
       }
     }
 
-    // Check for elements with note-related data attributes
-    const noteSelectors = [
-      '[data-testid*="note" i]',
-      '[data-testid*="community-note" i]',
+    // Priority 4: ARIA label matching
+    const ariaSelectors = [
       '[aria-label*="community note" i]',
-      '[aria-label*="readers added context" i]'
+      '[aria-label*="readers added context" i]',
+      '[aria-label*="added context" i]',
+      '[aria-label*="community context" i]'
     ];
 
-    for (const selector of noteSelectors) {
+    for (const selector of ariaSelectors) {
       try {
         if (article.querySelector(selector)) {
+          console.log('[X Community Note Hider] Detected via aria-label:', selector);
           return true;
         }
       } catch (e) {
-        // Invalid selector, skip
+        // Invalid selector, continue
       }
     }
 
-    // Check for links to community notes pages
+    // Priority 5: Links to community notes pages
     const communityNoteLinks = article.querySelectorAll('a[href]');
     for (const link of communityNoteLinks) {
       const href = link.getAttribute('href') || '';
-      if (/communitynotes|community-note/i.test(href)) {
+      if (/communitynotes|community-note|\/i\/communitynotes/i.test(href)) {
+        console.log('[X Community Note Hider] Detected via link:', href);
         return true;
       }
     }
 
-    // Check for specific note containers or badges
-    // Look for common patterns in the article structure (more targeted search)
-    const potentialNoteElements = article.querySelectorAll([
-      '[data-testid]',
-      '[aria-label]',
-      'span',
-      'div'
-    ].join(','));
-
-    for (const element of potentialNoteElements) {
-      const elementText = element.textContent || '';
+    // Priority 6: Fallback - check all elements with data-testid attributes
+    // This helps catch new attributes X might add in the future
+    const allTestIdElements = article.querySelectorAll('[data-testid]');
+    for (const element of allTestIdElements) {
+      const testId = element.getAttribute('data-testid') || '';
+      const text = element.textContent || '';
       const ariaLabel = element.getAttribute('aria-label') || '';
-      const dataTestId = element.getAttribute('data-testid') || '';
-      const combinedText = elementText + ' ' + ariaLabel + ' ' + dataTestId;
       
-      // Check if element contains community note indicators
-      for (const pattern of notePatterns) {
-        if (pattern.test(combinedText)) {
+      // Check for note-related keywords in any of these
+      const combined = testId + ' ' + text + ' ' + ariaLabel;
+      if (/community.*note|note.*community|readers.*context|added.*context/i.test(combined)) {
+        // Additional verification: ensure it's not a false positive
+        if (testId.toLowerCase().includes('note') || text.toLowerCase().includes('context')) {
+          console.log('[X Community Note Hider] Detected via fallback selector:', testId);
           return true;
         }
-      }
-      
-      // Early exit if we find a strong indicator
-      if (/community.*note/i.test(combinedText) || /note.*community/i.test(combinedText)) {
-        return true;
       }
     }
 
