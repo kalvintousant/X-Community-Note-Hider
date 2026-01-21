@@ -1,152 +1,106 @@
-// X Community Note Hide Extension
-// Automatically hides posts that have community notes
+// X Community Note Hider - Optimized
+// Works on timeline, profile pages, and search results
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 (function() {
   'use strict';
 
-  // Function to check if a post has a community note
-  function hasCommunityNote(article) {
-    if (!article) return false;
+  // Multiple indicators for community notes (case-insensitive patterns)
+  const NOTE_PATTERNS = [
+      /readers\s+added\s+context/i,
+      /community\s+note/i,
+      /community\s+notes/i,
+      /communitynote/i,
+      /context\s+they\s+thought\s+people\s+might\s+want\s+to\s+know/i,
+      /note\s+by\s+the\s+community/i
+  ];
 
-    // Community notes on X are typically indicated by:
-    // 1. Elements with data-testid containing "note" or similar
-    // 2. Text content mentioning "Community Note" or variations
-    // 3. Links to community notes pages
-    // 4. Specific SVG icons or labels related to notes
-    
-    // Get all text content from the article
-    const articleText = article.textContent || '';
-    
-    // Look for "Community Note" text variations (case-insensitive)
-    const notePatterns = [
-      /community\s*note/i,
-      /communitynotes/i,
-      /note\s*by\s*the\s*community/i,
-      /community\s*context/i
-    ];
-
-    for (const pattern of notePatterns) {
-      if (pattern.test(articleText)) {
-        return true;
-      }
-    }
-
-    // Check for elements with note-related data attributes
-    const noteSelectors = [
-      '[data-testid*="note" i]',
-      '[data-testid*="community-note" i]',
-      '[aria-label*="community note" i]',
-      '[aria-label*="community note" i]'
-    ];
-
-    for (const selector of noteSelectors) {
-      try {
-        if (article.querySelector(selector)) {
-          return true;
-        }
-      } catch (e) {
-        // Invalid selector, skip
-      }
-    }
-
-    // Check for links to community notes pages
-    const communityNoteLinks = article.querySelectorAll('a[href]');
-    for (const link of communityNoteLinks) {
-      const href = link.getAttribute('href') || '';
-      if (/communitynotes|community-note/i.test(href)) {
-        return true;
-      }
-    }
-
-    // Check for specific note containers or badges
-    // Look for common patterns in the article structure (more targeted search)
-    const potentialNoteElements = article.querySelectorAll([
-      '[data-testid]',
-      '[aria-label]',
-      'span',
-      'div'
-    ].join(','));
-
-    for (const element of potentialNoteElements) {
-      const elementText = element.textContent || '';
-      const ariaLabel = element.getAttribute('aria-label') || '';
-      const dataTestId = element.getAttribute('data-testid') || '';
-      const combinedText = elementText + ' ' + ariaLabel + ' ' + dataTestId;
+  function hasCommunityNote(tweet) {
+      // Get all text content from the tweet (case-insensitive)
+      const text = tweet.innerText || tweet.textContent || '';
       
-      // Check if element contains community note indicators
-      for (const pattern of notePatterns) {
-        if (pattern.test(combinedText)) {
+      // Check if any pattern matches
+      if (NOTE_PATTERNS.some(pattern => pattern.test(text))) {
           return true;
-        }
       }
-      
-      // Early exit if we find a strong indicator
-      if (/community.*note/i.test(combinedText) || /note.*community/i.test(combinedText)) {
-        return true;
-      }
-    }
 
-    return false;
+      // Also check for community notes links
+      const links = tweet.querySelectorAll('a[href]');
+      for (const link of links) {
+          const href = link.getAttribute('href') || '';
+          if (/communitynotes|community-note/i.test(href)) {
+              return true;
+          }
+      }
+
+      // Check for data attributes that might indicate notes
+      const noteElements = tweet.querySelectorAll('[data-testid*="note" i], [aria-label*="note" i], [aria-label*="context" i]');
+      for (const elem of noteElements) {
+          const label = elem.getAttribute('aria-label') || '';
+          const testId = elem.getAttribute('data-testid') || '';
+          if (/community.*note|note.*community|readers.*context|added.*context/i.test(label + testId)) {
+              return true;
+          }
+      }
+
+      return false;
   }
 
-  // Function to hide a post
-  function hidePost(article) {
-    if (article && !article.dataset.communityNoteHidden) {
-      article.dataset.communityNoteHidden = 'true';
-      article.style.display = 'none';
-      console.log('Hid post with community note');
-    }
-  }
+  function processTweets() {
+      // Select all tweets that haven't been checked yet
+      // This works on timeline, profile pages, and search results
+      const tweets = document.querySelectorAll('article[data-testid="tweet"]:not([data-note-checked])');
 
-  // Function to process existing posts
-  function processPosts() {
-    // Select all article elements (posts in X timeline)
-    const articles = document.querySelectorAll('article[data-testid="tweet"]');
-    
-    articles.forEach(article => {
-      if (!article.dataset.communityNoteHidden && hasCommunityNote(article)) {
-        hidePost(article);
-      }
-    });
-  }
+      tweets.forEach(tweet => {
+          // Mark as checked immediately to avoid re-processing
+          tweet.setAttribute('data-note-checked', 'true');
 
-  // MutationObserver to watch for new posts
-  function observeTimeline() {
-    const observer = new MutationObserver((mutations) => {
-      let shouldCheck = false;
-
-      mutations.forEach((mutation) => {
-        if (mutation.addedNodes.length > 0) {
-          shouldCheck = true;
-        }
+          // Check if this tweet has a community note
+          if (hasCommunityNote(tweet)) {
+              tweet.style.display = 'none';
+              tweet.setAttribute('data-community-note-hidden', 'true');
+              console.log('🚫 Hidden a tweet with Community Note');
+          }
       });
+  }
 
-      if (shouldCheck) {
-        // Debounce the check to avoid excessive processing
-        setTimeout(processPosts, 100);
+  // Run immediately on page load
+  if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+          processTweets();
+      });
+  } else {
+      processTweets();
+  }
+
+  // Also run after a short delay to catch posts that load slightly after DOMContentLoaded
+  setTimeout(processTweets, 500);
+  setTimeout(processTweets, 1500);
+
+  // Set up observer for dynamic content (infinite scroll, profile pages, etc.)
+  const observer = new MutationObserver((mutations) => {
+      // Check if any new nodes were added
+      let hasNewNodes = false;
+      for (const mutation of mutations) {
+          if (mutation.addedNodes.length > 0) {
+              hasNewNodes = true;
+              break;
+          }
       }
-    });
+      
+      if (hasNewNodes) {
+          // Debounce to avoid excessive processing
+          setTimeout(processTweets, 100);
+      }
+  });
 
-    // Start observing the document body for changes
-    observer.observe(document.body, {
+  // Start observing the entire document for changes
+  observer.observe(document.body, {
       childList: true,
       subtree: true
-    });
+  });
 
-    console.log('X Community Note Hide: Extension active');
-  }
+  // Also check periodically as a fallback (especially for profile pages)
+  setInterval(processTweets, 2000);
 
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      processPosts();
-      observeTimeline();
-    });
-  } else {
-    processPosts();
-    observeTimeline();
-  }
-
-  // Also run periodically as a fallback
-  setInterval(processPosts, 2000);
 })();
