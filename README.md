@@ -1,4 +1,4 @@
-# X Community Note Hide
+# X Community Note Hider
 
 A Chrome extension that automatically hides posts with community notes in your X (formerly Twitter) timeline.
 
@@ -83,4 +83,4 @@ To modify or extend the extension:
 
 ## License
 
-This project is open source and available for personal use.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -140,7 +140,7 @@
       subtree: true
     });
 
-    console.log('X Community Note Hide: Extension active');
+    console.log('X Community Note Hider: Extension active');
   }
 
   // Initialize when DOM is ready

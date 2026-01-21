@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "X Community Note Hide",
+  "name": "X Community Note Hider",
   "version": "1.0.0",
   "description": "Automatically hides posts that have community notes in X timeline",
   "permissions": [
