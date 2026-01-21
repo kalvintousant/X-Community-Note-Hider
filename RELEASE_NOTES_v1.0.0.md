@@ -11,29 +11,45 @@ Chrome extension that automatically hides posts with community notes on X (forme
 - ✅ **Real-time detection** - Hides posts as you scroll
 - ✅ **Privacy-focused** - No data collection or tracking, runs entirely locally
 - ✅ **Lightweight** - Minimal performance impact
+- ✅ **Customizable settings** - Enable/disable, whitelist accounts, and more
+- ✅ **Settings page** - Beautiful options UI for customization
+- ✅ **Manifest V3 compliant** - Ready for Chrome Web Store
+
+## ⚙️ Customization Options
+
+- **Enable/Disable Toggle** - Turn the extension on or off completely
+- **Account Whitelist** - Always show posts from specific accounts, even with community notes
+- **Note Type Filter** - Choose to hide all notes or only helpful notes (prepared for future)
+
+Access settings by right-clicking the extension icon → "Options" or via Chrome Extensions page.
 
 ## 🚀 Installation
 
-1. Download the `X-Community-Note-Hide-v1.0.0.zip` file above
+1. Download the `X-Community-Note-Hider-v1.0.0.zip` file above
 2. Extract the ZIP file to a folder on your computer
 3. Open Chrome and navigate to `chrome://extensions/`
 4. Enable "Developer mode" (toggle in the top-right corner)
 5. Click "Load unpacked"
 6. Select the extracted folder
-7. Done! The extension will automatically work on X.com
+7. Done! Right-click the extension icon → "Options" to customize settings
 
 ## 📋 How It Works
 
-The extension monitors your X timeline and automatically hides any posts that have community notes attached. It uses multiple detection methods:
+The extension monitors your X timeline and automatically hides any posts that have community notes attached. It uses priority-based detection with multiple fallback methods:
 
-- Text pattern matching (e.g., "Readers added context")
-- Data attribute detection
-- Link detection for community notes pages
+- **Priority 1**: Specific data-testid selectors (most reliable)
+- **Priority 2**: Badge/icon indicators
+- **Priority 3**: Text pattern matching (e.g., "Readers added context")
+- **Priority 4**: ARIA label matching
+- **Priority 5**: Link detection for community notes pages
+- **Priority 6**: Fallback selectors for future-proofing
 
 ## 🔧 What's Included
 
-- **manifest.json** - Extension configuration
-- **content.js** - Core extension logic
+- **manifest.json** - Extension configuration (Manifest V3)
+- **content.js** - Core extension logic with settings support
+- **options.html** - Settings page UI
+- **options.js** - Settings management
 - **LICENSE** - MIT License
 
 ## ⚠️ Requirements
