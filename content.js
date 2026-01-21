@@ -1,8 +1,69 @@
-// X Community Note Hide Extension
+// X Community Note Hider Extension
 // Automatically hides posts that have community notes
 
 (function() {
     'use strict';
+
+  // Settings management
+  const defaultSettings = {
+    enabled: true,
+    noteTypeFilter: 'all',
+    whitelistedAccounts: []
+  };
+
+  let settings = {...defaultSettings};
+
+  // Load settings from chrome.storage
+  function loadSettings() {
+    chrome.storage.sync.get(defaultSettings, (result) => {
+      settings = result;
+    });
+  }
+
+  // Get username from a tweet/article
+  function getUsernameFromArticle(article) {
+    try {
+      // Try to find the username link in the article
+      const usernameLink = article.querySelector('a[href*="/"]');
+      if (usernameLink) {
+        const href = usernameLink.getAttribute('href') || '';
+        const match = href.match(/\/([a-z0-9_]{1,15})$/i);
+        if (match) {
+          return match[1].toLowerCase();
+        }
+      }
+      
+      // Alternative: try to get from data-testid="User-Name" area
+      const userNameArea = article.querySelector('[data-testid="User-Name"]');
+      if (userNameArea) {
+        const links = userNameArea.querySelectorAll('a[href*="/"]');
+        for (const link of links) {
+          const href = link.getAttribute('href') || '';
+          const match = href.match(/\/([a-z0-9_]{1,15})$/i);
+          if (match) {
+            return match[1].toLowerCase();
+          }
+        }
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+    return null;
+  }
+
+  // Check if account is whitelisted
+  function isAccountWhitelisted(article) {
+    if (!settings.whitelistedAccounts || settings.whitelistedAccounts.length === 0) {
+      return false;
+    }
+    
+    const username = getUsernameFromArticle(article);
+    if (!username) {
+      return false;
+    }
+    
+    return settings.whitelistedAccounts.includes(username.toLowerCase());
+  }
 
   // Function to check if a post has a community note
   // Uses multiple detection methods with fallbacks for robustness
@@ -135,12 +196,47 @@
     if (article && !article.dataset.communityNoteHidden) {
       article.dataset.communityNoteHidden = 'true';
       article.style.display = 'none';
-      console.log('Hid post with community note');
+      console.log('[X Community Note Hider] Hid post with community note');
     }
+  }
+
+  // Check if post should be hidden based on settings
+  function shouldHidePost(article) {
+    // Check if extension is enabled
+    if (!settings.enabled) {
+      return false;
+    }
+
+    // Check if account is whitelisted
+    if (isAccountWhitelisted(article)) {
+      return false;
+    }
+
+    // Check if post has community note
+    if (!hasCommunityNote(article)) {
+      return false;
+    }
+
+    // Note type filtering would go here if X exposes helpful/not helpful data
+    // For now, all notes are treated the same
+    
+    return true;
   }
 
   // Function to process existing posts
   function processPosts() {
+    // Check if extension is enabled
+    if (!settings.enabled) {
+      // If disabled, show all previously hidden posts
+      const hiddenPosts = document.querySelectorAll('article[data-community-note-hidden="true"]');
+      hiddenPosts.forEach(article => {
+        article.style.display = '';
+        article.removeAttribute('data-community-note-hidden');
+        article.removeAttribute('data-note-checked');
+      });
+      return;
+    }
+
     // Select all article elements (posts in X timeline, profile pages, etc.)
     // Only check posts that haven't been checked yet to improve performance
     const articles = document.querySelectorAll('article[data-testid="tweet"]:not([data-note-checked])');
@@ -149,8 +245,15 @@
       // Mark as checked to avoid re-processing
       article.setAttribute('data-note-checked', 'true');
       
-      if (!article.dataset.communityNoteHidden && hasCommunityNote(article)) {
+      // Check if post should be hidden based on settings
+      if (shouldHidePost(article)) {
         hidePost(article);
+      } else {
+        // Make sure post is visible if it shouldn't be hidden
+        if (article.dataset.communityNoteHidden) {
+          article.style.display = '';
+          article.removeAttribute('data-community-note-hidden');
+        }
       }
     });
   }
@@ -181,21 +284,41 @@
     console.log('X Community Note Hider: Extension active');
   }
 
+  // Listen for settings changes from options page
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === 'sync') {
+      loadSettings();
+      // Reprocess all posts with new settings
+      setTimeout(() => {
+        document.querySelectorAll('article[data-testid="tweet"]').forEach(article => {
+          article.removeAttribute('data-note-checked');
+        });
+        processPosts();
+      }, 100);
+    }
+  });
+
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      processPosts();
-      observeTimeline();
-      // Run again after delays to catch posts that load later (profile pages, etc.)
-      setTimeout(processPosts, 500);
-      setTimeout(processPosts, 1500);
+      loadSettings();
+      setTimeout(() => {
+        processPosts();
+        observeTimeline();
+        // Run again after delays to catch posts that load later (profile pages, etc.)
+        setTimeout(processPosts, 500);
+        setTimeout(processPosts, 1500);
+      }, 100);
     });
   } else {
-    processPosts();
-    observeTimeline();
-    // Run again after delays
-    setTimeout(processPosts, 500);
-    setTimeout(processPosts, 1500);
+    loadSettings();
+    setTimeout(() => {
+      processPosts();
+      observeTimeline();
+      // Run again after delays
+      setTimeout(processPosts, 500);
+      setTimeout(processPosts, 1500);
+    }, 100);
   }
 
   // Also run periodically as a fallback (especially for profile pages)

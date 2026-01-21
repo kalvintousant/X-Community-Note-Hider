@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X Community Note Hider - Settings</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .setting {
+      margin-bottom: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .setting:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .setting-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .setting-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .setting-description {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 28px;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: 0.3s;
+      border-radius: 28px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #667eea;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .whitelist-section {
+      margin-top: 15px;
+    }
+
+    .whitelist-input {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .whitelist-input input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .whitelist-input input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .whitelist-input button {
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .whitelist-input button:hover {
+      background: #5568d3;
+    }
+
+    .whitelist-input button:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .whitelist-list {
+      margin-top: 12px;
+    }
+
+    .whitelist-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .whitelist-item span {
+      font-size: 14px;
+      color: #111827;
+    }
+
+    .whitelist-item button {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .whitelist-item button:hover {
+      background: #fee2e2;
+    }
+
+    .select-wrapper {
+      margin-top: 12px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+    }
+
+    .status.success {
+      background: #d1fae5;
+      color: #065f46;
+      display: block;
+    }
+
+    .footer {
+      padding: 20px 30px;
+      background: #f9fafb;
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>X Community Note Hider</h1>
+      <p>Customize how community notes are hidden</p>
+    </div>
+
+    <div class="content">
+      <!-- Enable/Disable Toggle -->
+      <div class="setting">
+        <div class="setting-header">
+          <div>
+            <div class="setting-title">Enable Extension</div>
+            <div class="setting-description">Turn the extension on or off completely</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="enableExtension">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Note Type Filter -->
+      <div class="setting">
+        <div class="setting-title">Hide Note Types</div>
+        <div class="setting-description">Choose which types of community notes to hide</div>
+        <div class="select-wrapper">
+          <select id="noteTypeFilter">
+            <option value="all">Hide All Notes</option>
+            <option value="helpful">Hide Only Helpful Notes</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Whitelist Accounts -->
+      <div class="setting">
+        <div class="setting-title">Whitelist Accounts</div>
+        <div class="setting-description">Accounts to always show, even if they have community notes (usernames without @)</div>
+        <div class="whitelist-section">
+          <div class="whitelist-input">
+            <input type="text" id="whitelistInput" placeholder="Enter username (e.g., elonmusk)">
+            <button id="addWhitelistBtn">Add</button>
+          </div>
+          <div class="whitelist-list" id="whitelistList">
+            <div class="empty-state">No whitelisted accounts</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status" id="statusMessage"></div>
+    </div>
+
+    <div class="footer">
+      <p>Settings are saved automatically • Manifest V3 Compliant</p>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

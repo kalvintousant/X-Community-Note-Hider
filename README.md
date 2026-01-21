@@ -72,14 +72,32 @@ This extension:
 - ✅ Works entirely locally in your browser
 - ✅ No external connections or tracking
 
+## Settings
+
+The extension includes customizable settings:
+
+- **Enable/Disable**: Turn the extension on or off completely
+- **Note Type Filter**: Choose to hide all notes or only helpful notes
+- **Whitelist Accounts**: Add usernames to always show, even with community notes
+
+To access settings:
+1. Right-click the extension icon in Chrome
+2. Select "Options" (or go to `chrome://extensions/` → find "X Community Note Hider" → click "Options")
+
 ## Development
 
 To modify or extend the extension:
 
 1. Edit `content.js` to change the detection logic
 2. Edit `manifest.json` to update permissions or settings
-3. After changes, reload the extension in `chrome://extensions/`
+3. Edit `options.html` and `options.js` to customize the settings page
+4. After changes, reload the extension in `chrome://extensions/`
 
+## Technical Details
+
+- **Manifest Version**: V3 (required for new Chrome extensions)
+- **Permissions**: Uses `storage` for settings and `host_permissions` for X.com/Twitter.com
+- **Storage**: Settings are synced across devices via `chrome.storage.sync`
 
 ## License
 
