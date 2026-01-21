@@ -11,29 +11,33 @@ A Chrome extension that automatically hides posts with community notes in your X
 
 ## Installation
 
-### Manual Installation
+### Option 1: Download from GitHub Releases (Recommended)
 
-1. **Download or clone this repository**
+1. **Download the extension**
+   - Go to [Releases](../../releases) (or the latest release)
+   - Download `X-Community-Note-Hide.zip`
+
+2. **Extract the ZIP file**
+
+3. **Install in Chrome**
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" (toggle in top-right)
+   - Click "Load unpacked"
+   - Select the extracted folder
+
+### Option 2: Clone from GitHub
+
+1. **Clone this repository**
    ```bash
-   git clone <repository-url>
-   cd "X Community Note Hide"
+   git clone https://github.com/kalvintousant/X-Community-Note-Hide.git
+   cd X-Community-Note-Hide
    ```
 
-2. **Open Chrome Extensions page**
-   - Open Google Chrome
-   - Navigate to `chrome://extensions/`
-   - Or go to Menu → Extensions → Manage Extensions
-
-3. **Enable Developer Mode**
-   - Toggle the "Developer mode" switch in the top-right corner
-
-4. **Load the extension**
+2. **Install in Chrome**
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode" (toggle in top-right)
    - Click "Load unpacked"
-   - Select the folder containing this extension
-
-5. **Optional: Create Extension Icons**
-   - The extension references icon files (`icon16.png`, `icon48.png`, `icon128.png`)
-   - You can create these icons or the extension will work without them (you'll see a default icon)
+   - Select the cloned folder
 
 ## How It Works
 
