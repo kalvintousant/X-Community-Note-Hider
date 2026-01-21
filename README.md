@@ -4,10 +4,13 @@ A Chrome extension that automatically hides posts with community notes in your X
 
 ## Features
 
-- Automatically detects posts with community notes
-- Hides community-noted posts from your timeline
-- Works in real-time as you scroll
-- Lightweight and non-intrusive
+- ✅ Automatically detects posts with community notes
+- ✅ Hides community-noted posts from your timeline
+- ✅ Works in real-time as you scroll
+- ✅ Lightweight and non-intrusive
+- ✅ **Customizable settings** - Enable/disable, whitelist accounts, and more
+- ✅ **Settings page** - Beautiful options UI for customization
+- ✅ **Manifest V3 compliant** - Ready for Chrome Web Store
 
 ## Installation
 
@@ -54,6 +57,8 @@ The extension monitors your X timeline and automatically hides any posts that ha
 Once installed, the extension works automatically. No configuration needed!
 
 Just visit X.com or Twitter.com, and any posts with community notes will be automatically hidden from your timeline.
+
+**Want to customize?** Right-click the extension icon → "Options" to access settings.
 
 ## Troubleshooting
 
