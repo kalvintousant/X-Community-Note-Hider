@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "X Community Note Hider",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Automatically hides posts with community notes in X timeline",
   "permissions": [
     "storage"
@@ -10,6 +10,9 @@
     "https://x.com/*",
     "https://twitter.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["https://x.com/*", "https://twitter.com/*"],
@@ -23,6 +26,6 @@
     "open_in_tab": true
   },
   "action": {
-    "default_title": "X Community Note Hider"
+    "default_title": "X Community Note Hider - Click to open settings"
   }
 }

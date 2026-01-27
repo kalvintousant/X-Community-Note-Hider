@@ -9,13 +9,15 @@
     enabled: true,
     noteTypeFilter: 'all', // 'all' or 'helpful'
     whitelistedAccounts: [],
-    hideProposedNotes: true
+    hideProposedNotes: true,
+    prioritizeFollowedInSearch: true
   };
 
   // DOM elements
   const enableExtension = document.getElementById('enableExtension');
   const noteTypeFilter = document.getElementById('noteTypeFilter');
   const hideProposedNotes = document.getElementById('hideProposedNotes');
+  const prioritizeFollowedInSearch = document.getElementById('prioritizeFollowedInSearch');
   const whitelistInput = document.getElementById('whitelistInput');
   const addWhitelistBtn = document.getElementById('addWhitelistBtn');
   const whitelistList = document.getElementById('whitelistList');
@@ -28,6 +30,7 @@
       enableExtension.checked = settings.enabled;
       noteTypeFilter.value = settings.noteTypeFilter || 'all';
       hideProposedNotes.checked = settings.hideProposedNotes !== false; // Default to true
+      prioritizeFollowedInSearch.checked = settings.prioritizeFollowedInSearch !== false; // Default to true
       updateWhitelistDisplay(settings.whitelistedAccounts || []);
     });
   }
@@ -118,6 +121,10 @@
 
   hideProposedNotes.addEventListener('change', (e) => {
     saveSettings({hideProposedNotes: e.target.checked});
+  });
+
+  prioritizeFollowedInSearch.addEventListener('change', (e) => {
+    saveSettings({prioritizeFollowedInSearch: e.target.checked});
   });
 
   addWhitelistBtn.addEventListener('click', addToWhitelist);

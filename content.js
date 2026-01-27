@@ -12,7 +12,8 @@
     enabled: true,
     noteTypeFilter: 'all',
     whitelistedAccounts: [],
-    hideProposedNotes: true
+    hideProposedNotes: true,
+    prioritizeFollowedInSearch: true
   };
 
   // Timing constants (in milliseconds)
@@ -458,6 +459,196 @@
   }
 
   // ============================================================================
+  // Search Results Enhancement
+  // ============================================================================
+  
+  /**
+   * Check if we're on a search results page
+   * @returns {boolean}
+   */
+  function isSearchPage() {
+    const url = window.location.href;
+    return /\/search/i.test(url) || /\/hashtag/i.test(url);
+  }
+
+  /**
+   * Check if a search result item is from an account the user follows
+   * @param {HTMLElement} item - The search result item element
+   * @returns {boolean}
+   */
+  function isFollowedAccount(item) {
+    if (!item) return false;
+
+    // Method 1: Look for "Following" text or badge
+    const itemText = item.textContent || '';
+    if (/following/i.test(itemText)) {
+      // Additional check: make sure it's not "Not following" or similar
+      const followingElements = item.querySelectorAll('span, div');
+      for (const el of followingElements) {
+        const text = (el.textContent || '').trim().toLowerCase();
+        if (text === 'following' || text === 'follows you') {
+          return true;
+        }
+      }
+    }
+
+    // Method 2: Look for "Following" button (button that says "Following")
+    const buttons = item.querySelectorAll('button, [role="button"]');
+    for (const button of buttons) {
+      const buttonText = (button.textContent || '').trim().toLowerCase();
+      if (buttonText === 'following') {
+        return true;
+      }
+      
+      // Check aria-label
+      const ariaLabel = (button.getAttribute('aria-label') || '').toLowerCase();
+      if (ariaLabel.includes('following')) {
+        return true;
+      }
+    }
+
+    // Method 3: Look for data-testid attributes related to following
+    const followingIndicators = item.querySelectorAll('[data-testid*="follow" i]');
+    for (const indicator of followingIndicators) {
+      const testId = indicator.getAttribute('data-testid') || '';
+      if (/following|follows/i.test(testId) && !/unfollow|not.*follow/i.test(testId)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Reorder search results to show followed accounts first
+   */
+  function prioritizeFollowedInSearch() {
+    if (!settingsLoaded || !settings.prioritizeFollowedInSearch) {
+      return;
+    }
+
+    // Mark items to avoid re-processing
+    const PROCESSED_MARKER = 'data-search-processed';
+    const REORDERED_MARKER = 'data-search-reordered';
+    
+    // Find search result items - X uses article elements for search results
+    const searchResults = document.querySelectorAll(`article[data-testid="tweet"]:not([${PROCESSED_MARKER}])`);
+    
+    if (searchResults.length === 0) {
+      return;
+    }
+
+    // Separate followed and non-followed accounts
+    const followedItems = [];
+    const otherItems = [];
+
+    searchResults.forEach(item => {
+      // Mark as processed
+      item.setAttribute(PROCESSED_MARKER, 'true');
+      
+      if (isFollowedAccount(item)) {
+        followedItems.push(item);
+      } else {
+        otherItems.push(item);
+      }
+    });
+
+    // Only reorder if we found followed accounts and there are other items
+    if (followedItems.length > 0 && otherItems.length > 0) {
+      // Find common parent container - look for section or main container
+      const firstItem = followedItems[0] || otherItems[0];
+      if (!firstItem) return;
+      
+      let commonParent = firstItem.parentElement;
+      let depth = 0;
+      
+      // Find a suitable parent container (section, main, or div with multiple children)
+      while (commonParent && depth < 6) {
+        const siblings = Array.from(commonParent.children).filter(child => 
+          child.tagName === 'ARTICLE' || child.querySelector('article[data-testid="tweet"]')
+        );
+        
+        if (siblings.length >= followedItems.length + otherItems.length) {
+          break;
+        }
+        commonParent = commonParent.parentElement;
+        depth++;
+      }
+      
+      if (!commonParent) {
+        commonParent = firstItem.parentElement;
+      }
+      
+      if (!commonParent) return;
+
+      // Mark parent as reordered to avoid conflicts
+      if (commonParent.getAttribute(REORDERED_MARKER) === 'true') {
+        return; // Already reordered this container
+      }
+      commonParent.setAttribute(REORDERED_MARKER, 'true');
+
+      // Reorder: followed accounts first, then others
+      // Get all items in order
+      const allItems = Array.from(commonParent.children).filter(child => {
+        return child.tagName === 'ARTICLE' || child.querySelector('article[data-testid="tweet"]');
+      });
+
+      // Separate into followed and others from the actual DOM order
+      const domFollowed = [];
+      const domOthers = [];
+      
+      allItems.forEach(item => {
+        const article = item.tagName === 'ARTICLE' ? item : item.querySelector('article[data-testid="tweet"]');
+        if (article && isFollowedAccount(article)) {
+          domFollowed.push(item);
+        } else {
+          domOthers.push(item);
+        }
+      });
+
+      // Only reorder if the order is not already correct
+      if (domFollowed.length > 0 && domOthers.length > 0) {
+        const firstOtherIndex = allItems.indexOf(domOthers[0]);
+        const lastFollowedIndex = allItems.indexOf(domFollowed[domFollowed.length - 1]);
+        
+        // If followed items are not already at the top, reorder
+        if (firstOtherIndex < lastFollowedIndex) {
+          // Move followed items to the top
+          domFollowed.forEach((item, index) => {
+            if (item.parentElement === commonParent) {
+              if (index === 0) {
+                commonParent.insertBefore(item, commonParent.firstElementChild);
+              } else {
+                const prevItem = domFollowed[index - 1];
+                if (prevItem && prevItem.nextSibling) {
+                  commonParent.insertBefore(item, prevItem.nextSibling);
+                }
+              }
+            }
+          });
+          
+          console.log(`[X Community Note Hider] Reordered ${domFollowed.length} followed accounts to the top of search results`);
+        }
+      }
+    }
+  }
+
+  /**
+   * Process search results page
+   */
+  function processSearchResults() {
+    if (!isSearchPage()) {
+      return;
+    }
+
+    if (!settingsLoaded || !settings.prioritizeFollowedInSearch) {
+      return;
+    }
+
+    prioritizeFollowedInSearch();
+  }
+
+  // ============================================================================
   // Post Processing
   // ============================================================================
   
@@ -575,6 +766,12 @@
         setTimeout(processPosts, TIMING.MUTATION_DEBOUNCE);
         // Also check again after a delay to catch async-loaded notes
         setTimeout(processPosts, TIMING.MUTATION_DELAY);
+        
+        // Also process search results if on search page
+        if (isSearchPage()) {
+          setTimeout(processSearchResults, TIMING.MUTATION_DEBOUNCE);
+          setTimeout(processSearchResults, TIMING.MUTATION_DELAY);
+        }
       }
     });
 
@@ -605,9 +802,14 @@
     processPosts();
     observeTimeline();
     
+    // Process search results if on search page
+    processSearchResults();
+    
     // Run again after delays to catch posts that load later (profile pages, etc.)
     setTimeout(processPosts, TIMING.FIRST_RECHECK);
     setTimeout(processPosts, TIMING.SECOND_RECHECK);
+    setTimeout(processSearchResults, TIMING.FIRST_RECHECK);
+    setTimeout(processSearchResults, TIMING.SECOND_RECHECK);
   }
 
   // Listen for settings changes from options page
@@ -634,7 +836,12 @@
 
   // Also run periodically as a fallback (especially for profile pages)
   // This ensures we catch community notes that load very late
-  setInterval(processPosts, TIMING.RECHECK_INTERVAL);
+  setInterval(() => {
+    processPosts();
+    if (isSearchPage()) {
+      processSearchResults();
+    }
+  }, TIMING.RECHECK_INTERVAL);
   
   // Additional periodic check with longer interval for posts that might have been missed
   // Re-check all visible posts every 10 seconds to catch very late-loading notes

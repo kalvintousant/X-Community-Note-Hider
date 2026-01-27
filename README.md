@@ -4,6 +4,7 @@ A Chrome extension that automatically hides posts with community notes in your X
 
 ## Features
 
+### Core Features
 - ✅ Automatically detects posts with community notes
 - ✅ **Detects proposed community notes** - Hides posts where you're asked to rate a proposed note
 - ✅ Hides community-noted posts from your timeline
@@ -14,13 +15,17 @@ A Chrome extension that automatically hides posts with community notes in your X
 - ✅ **Settings page** - Beautiful dark-themed options UI matching X's design
 - ✅ **Manifest V3 compliant** - Ready for Chrome Web Store
 
+### v1.1 Features
+- ✅ **Prioritize Followed Accounts in Search** - Automatically shows accounts you follow at the top of search results
+- ✅ **Extension Icon Click** - Click the extension icon in the toolbar to quickly open settings
+
 ## Installation
 
 ### Option 1: Download from GitHub Releases (Recommended)
 
 1. **Download the extension**
    - Go to [Releases](../../releases) (or the latest release)
-   - Download `X-Community-Note-Hider-v1.0.0.zip`
+   - Download `X-Community-Note-Hider-v1.1.0.zip` (or latest version)
 
 2. **Extract the ZIP file**
 
@@ -59,6 +64,10 @@ The extension monitors your X timeline and automatically hides any posts that ha
   - Text patterns indicating note rating requests
   - Rating-related UI elements
 - **Async Loading Support**: Re-checks posts periodically to catch community notes that load after the initial page render
+- **Search Enhancement (v1.1)**: Automatically reorders search results to prioritize accounts you follow:
+  - Detects when you're on a search results page
+  - Identifies followed accounts using "Following" indicators
+  - Reorders results in real-time as new results load
 
 ## Usage
 
@@ -66,7 +75,7 @@ Once installed, the extension works automatically. No configuration needed!
 
 Just visit X.com or Twitter.com, and any posts with community notes will be automatically hidden from your timeline.
 
-**Want to customize?** Right-click the extension icon → "Options" to access settings.
+**Want to customize?** Click the extension icon in your toolbar or right-click → "Options" to access settings.
 
 ## Troubleshooting
 
@@ -91,12 +100,14 @@ The extension includes customizable settings with a dark-themed UI matching X's 
 
 - **Enable/Disable**: Turn the extension on or off completely
 - **Hide Proposed Community Notes**: Toggle to hide posts where you're asked to rate a proposed community note (enabled by default)
+- **Prioritize Followed Accounts in Search (v1.1)**: Toggle to show accounts you follow at the top of search results (enabled by default)
 - **Note Type Filter**: Choose to hide all notes or only helpful notes
 - **Whitelist Accounts**: Add usernames to always show, even with community notes
 
 To access settings:
-1. Right-click the extension icon in Chrome
-2. Select "Options" (or go to `chrome://extensions/` → find "X Community Note Hider" → click "Options")
+1. **Click the extension icon** in your Chrome toolbar (v1.1), or
+2. Right-click the extension icon → "Options", or
+3. Go to `chrome://extensions/` → find "X Community Note Hider" → click "Options"
 
 ## Development
 
