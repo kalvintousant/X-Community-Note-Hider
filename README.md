@@ -5,11 +5,13 @@ A Chrome extension that automatically hides posts with community notes in your X
 ## Features
 
 - ✅ Automatically detects posts with community notes
+- ✅ **Detects proposed community notes** - Hides posts where you're asked to rate a proposed note
 - ✅ Hides community-noted posts from your timeline
 - ✅ Works in real-time as you scroll
+- ✅ Handles async-loaded notes - Re-checks posts as community notes load
 - ✅ Lightweight and non-intrusive
-- ✅ **Customizable settings** - Enable/disable, whitelist accounts, and more
-- ✅ **Settings page** - Beautiful options UI for customization
+- ✅ **Customizable settings** - Enable/disable, whitelist accounts, hide proposed notes, and more
+- ✅ **Settings page** - Beautiful dark-themed options UI matching X's design
 - ✅ **Manifest V3 compliant** - Ready for Chrome Web Store
 
 ## Installation
@@ -46,11 +48,17 @@ A Chrome extension that automatically hides posts with community notes in your X
 
 The extension monitors your X timeline and automatically hides any posts that have community notes attached. It uses:
 
-- **MutationObserver**: Watches for new posts as you scroll
-- **Community Note Detection**: Identifies posts with community notes through various indicators:
-  - Text content mentioning "Community Note"
+- **MutationObserver**: Watches for new posts as you scroll and detects changes within existing posts
+- **Community Note Detection**: Identifies posts with community notes through multiple detection methods:
+  - Text content mentioning "Community Note" or "Readers added context"
   - Elements with note-related data attributes
   - Links to community notes pages
+  - Structural patterns X uses for note containers
+- **Proposed Note Detection**: Detects posts where you're asked to rate a proposed community note:
+  - Identifies "Helpful" and "Not helpful" rating buttons
+  - Text patterns indicating note rating requests
+  - Rating-related UI elements
+- **Async Loading Support**: Re-checks posts periodically to catch community notes that load after the initial page render
 
 ## Usage
 
@@ -79,9 +87,10 @@ This extension:
 
 ## Settings
 
-The extension includes customizable settings:
+The extension includes customizable settings with a dark-themed UI matching X's design:
 
 - **Enable/Disable**: Turn the extension on or off completely
+- **Hide Proposed Community Notes**: Toggle to hide posts where you're asked to rate a proposed community note (enabled by default)
 - **Note Type Filter**: Choose to hide all notes or only helpful notes
 - **Whitelist Accounts**: Add usernames to always show, even with community notes
 
